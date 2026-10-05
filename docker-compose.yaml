@@ -1,6 +1,7 @@
 
 x-mesh-service: &mesh-service
   image: servicemap/mesh-service
+  pull_policy: never
   mem_limit: 640m
   environment: &mesh-environment
     OTLP_ENDPOINT: http://lgtm:4318
@@ -8,6 +9,19 @@ x-mesh-service: &mesh-service
     - lgtm
 
 services:
+  image-builder:
+    profiles: [build]
+    image: eclipse-temurin:25-jdk
+    working_dir: /workspace
+    command: ./gradlew bootBuildImage --no-daemon --console=plain
+    environment:
+      DOCKER_HOST: unix:///var/run/docker.sock
+      GRADLE_USER_HOME: /gradle-home
+    volumes:
+      - .:/workspace
+      - /var/run/docker.sock:/var/run/docker.sock
+      - gradle-home:/gradle-home
+
   lgtm:
     image: grafana/otel-lgtm:latest
     environment:
@@ -24,6 +38,7 @@ services:
 
   service-c:
     image: servicemap/service-c
+    pull_policy: never
     environment:
       OTLP_ENDPOINT: http://lgtm:4318
     ports:
@@ -33,6 +48,7 @@ services:
 
   service-b:
     image: servicemap/service-b
+    pull_policy: never
     environment:
       OTLP_ENDPOINT: http://lgtm:4318
       SERVICE_C_URL: http://service-c:8080
@@ -43,6 +59,7 @@ services:
 
   service-d:
     image: servicemap/service-d
+    pull_policy: never
     environment:
       OTLP_ENDPOINT: http://lgtm:4318
       SERVICE_C_URL: http://service-c:8080
@@ -53,6 +70,7 @@ services:
 
   service-a:
     image: servicemap/service-a
+    pull_policy: never
     environment:
       OTLP_ENDPOINT: http://lgtm:4318
       SERVICE_B_URL: http://service-b:8080
@@ -159,3 +177,6 @@ services:
       SPRING_CONFIG_ADDITIONAL_LOCATION: file:/config/
     volumes:
       - ./mesh/notification-service.yaml:/config/application.yaml:ro
+
+volumes:
+  gradle-home:

@@ -15,14 +15,32 @@ service-a --/status-> service-d --/hello--> service-c
 
 ## Run it and see the UI
 
-Requirements: Docker with Compose, about 6 GB free RAM for the Docker VM (sixteen JVMs plus Grafana), internet access for the first build, and a JDK 25 plus Gradle only if you do not use the Nix shell below. The images are built with Spring Boot's `bootBuildImage` (Cloud Native Buildpacks, no Dockerfile), so Docker must be reachable from Gradle (set `DOCKER_HOST` if your Docker socket is not `/var/run/docker.sock`, e.g. Rancher Desktop).
+Requirements: Nix with flakes enabled, Docker with Compose (about 6 GB free RAM for the Docker VM) and internet access for the first build. Nothing else is installed on the machine: Nix provides JDK 25, the Gradle wrapper downloads Gradle, and the images are built with Spring Boot's `bootBuildImage` (Cloud Native Buildpacks, no Dockerfile).
+
+One command builds all images, starts everything and then checks that it works: Grafana is healthy, both dashboards and the panel plugin are loaded, and the load generator is producing traces (api-gateway, down to the deepest service), service graph metrics and logs. It exits non-zero and names the failed check if something is missing:
 
 ```bash
-nix develop -c ./gradlew bootBuildImage   # builds servicemap/service-a..d and servicemap/mesh-service
-docker compose up -d
+nix run .
 ```
 
-Without Nix, install a JDK 25 and run `./gradlew bootBuildImage` directly (the Gradle wrapper downloads Gradle itself). `nix develop` gives you JDK 25 and Gradle from `flake.nix`.
+Stop and delete everything (including the stored telemetry) with:
+
+```bash
+nix run .#down
+```
+
+Docker only (no Nix, no JDK): a one-shot `image-builder` container runs the same Gradle build against your Docker socket, then the stack starts:
+
+```bash
+docker compose run --rm image-builder && docker compose up -d
+```
+
+For the Nix and manual variants, Docker must be reachable from Gradle; set `DOCKER_HOST` if your socket is not `/var/run/docker.sock` (e.g. Rancher Desktop). Without Nix and without the builder container, install a JDK 25 and run the two steps by hand:
+
+```bash
+./gradlew bootBuildImage   # builds servicemap/service-a..d and servicemap/mesh-service
+docker compose up -d
+```
 
 1. Wait about 2 minutes: the services start and the load generator waits 20-25 s before sending traffic. Check with `docker compose ps` (everything should be `Up`).
 2. Open Grafana at http://localhost:3000. Anonymous access is enabled with the admin role, so there is no login.
@@ -37,7 +55,7 @@ Without Nix, install a JDK 25 and run `./gradlew bootBuildImage` directly (the G
 
 Other UIs: Explore in Grafana has Tempo (traces), Loki (logs, label `service_name`) and Prometheus (metrics). Ports: Grafana 3000, OTLP 4317/4318, `service-a`..`d` on 8081-8084.
 
-Stop everything with `docker compose down`; start it again with `docker compose up -d`. All data lives inside the Grafana container and is lost when it is recreated.
+Without rebuilding, `docker compose down` and `docker compose up -d` stop and start the containers. All data lives inside the Grafana container and is lost when it is recreated.
 
 ## Load generator
 
