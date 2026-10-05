@@ -156,8 +156,8 @@ function bezierPoint(edge, t) {
   };
 }
 
-function placeLabels(edges) {
-  const placed = [];
+function placeLabels(edges, nodes) {
+  const placed = Object.values(nodes).map((node) => ({ x: node.x, y: node.y, width: NODE_WIDTH, height: node.height }));
   const overlaps = (box, other) => box.x < other.x + other.width + 8 && other.x < box.x + box.width + 8 && box.y < other.y + other.height + 6 && other.y < box.y + box.height + 6;
   [...edges].sort((a, b) => b.count - a.count).forEach((edge) => {
     const text = edge.uri + "  " + formatCount(edge.count);
@@ -248,7 +248,7 @@ function graphMarkup(edges, selection, rangeMinutes, ramp) {
     edge.control1X = edge.startX + (edge.endX - edge.startX) * 0.5;
     edge.control2X = edge.endX - (edge.endX - edge.startX) * 0.5;
   });
-  placeLabels(edges);
+  placeLabels(edges, nodes);
 
   const dataAttributes = (edge) =>
     `data-key="${edge.client}|${edge.server}|${edge.uri}" data-index="${edge.index}" data-triggers="${edge.triggers.join(",")}" data-from="${edge.client}" data-to="${edge.server}" data-hops="${edge.hops}" data-uri="${edge.uri}" data-count="${edge.count}" data-rate="${(edge.count / rangeMinutes).toFixed(1)}" data-share="${Math.round((edge.count / totalCalls) * 100)}"`;

@@ -1,5 +1,9 @@
 # Service map by URL
 
+![Service map of the calls made by payment-orchestrator: the edge to clearing-service is selected and its downstream calls to fraud-detection-service and notification-service are highlighted](docs/service-map-edge-selected.png)
+
+**An interactive service map in Grafana that shows, for any service and URL, every direct and transitive caller or callee, built purely from OpenTelemetry traces, logs and metrics.**
+
 A local demo that shows, for a chosen service and URL, who calls it and what it calls, including transitive calls. Twelve Spring Boot 4.1 / Kotlin services (Java 25 LTS) send traces, logs and metrics via OTLP to a Grafana LGTM stack (`grafana/otel-lgtm`), and the dashboards draw the service map from those signals.
 
 ```
@@ -135,11 +139,9 @@ How it works: each outgoing call records the inbound route of its caller as span
 
 ## HTML dashboard (edge labels, animated edges)
 
-![Service map with one edge selected: the edge, its call chain and the filtered table](docs/service-map-edge-selected.png)
+*Selecting an edge (see the picture at the top) highlights and animates it and its call chain, fades everything else, names it in the "Selected" bar and filters the table below to the edges in that chain.*
 
-*An edge (`api-gateway` → `mobile-banking-bff`, `/api/dashboard`) is selected: it and its call chain are highlighted and animated, everything else fades, the "Selected" bar names the edge and the table below shows only the edges in that chain.*
-
-A selection can be shared as a link: add `&select=edge:<caller>|<called>|<url>` or `&select=service:<name>` to the dashboard URL, e.g. `...service-map-html?var-service=ledger-service&select=edge:api-gateway|mobile-banking-bff|/api/dashboard`.
+A selection can be shared as a link: add `&select=edge:<caller>|<called>|<url>` or `&select=service:<name>` to the dashboard URL (and `&view=map` to hide everything but the map), e.g. `...service-map-html?var-mode=0&var-service=payment-orchestrator&select=edge:payment-orchestrator|clearing-service|/clearing/submit`.
 
 [Service map (HTML)](http://localhost:3000/d/servicemap-html/service-map-html) is the same map drawn as SVG by the Business Text panel (`marcusolsson-dynamictext-panel` 6.3.0, Handlebars templates, Apache-2.0, maintained by Grafana Labs). It uses the same dropdowns and adds:
 

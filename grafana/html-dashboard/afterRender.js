@@ -1,8 +1,10 @@
 const root = context.element;
-const initialSelection = new URLSearchParams(window.location.search).get("select");
+const urlParameters = new URLSearchParams(window.location.search);
+const initialSelection = urlParameters.get("select");
 const container = root.querySelector(".service-map");
 if (!container || container.dataset.bound === "true") return;
 container.dataset.bound = "true";
+container.classList.toggle("map-only", urlParameters.get("view") === "map");
 const state = (window.serviceMapState = window.serviceMapState || { selection: null, hops: "all" });
 const groups = [...root.querySelectorAll(".edge-group, .edge-label")];
 const nodes = [...root.querySelectorAll(".node")];

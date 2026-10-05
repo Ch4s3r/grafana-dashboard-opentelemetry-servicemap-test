@@ -158,7 +158,7 @@
   opacity: 0.92;
 }
 .service-map .edge-hit {
-  cursor: help;
+  cursor: pointer;
 }
 .service-map .hidden {
   display: none;
@@ -387,4 +387,15 @@
 }
 .service-map .table-view tr.chosen-row td:first-child {
   box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.service-map.map-only .stats,
+.service-map.map-only .chips,
+.service-map.map-only .selection-bar,
+.service-map.map-only .table-view,
+.service-map.map-only .legend {
+  display: none;
+}
+.service-map.map-only svg {
+  max-height: none;
 }
