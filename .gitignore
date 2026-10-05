@@ -1,2 +1,5 @@
 target/
+build/
+.gradle/
+.kotlin/
 .DS_Store

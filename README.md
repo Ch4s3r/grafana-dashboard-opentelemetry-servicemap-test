@@ -1,6 +1,6 @@
 # Service map by URL
 
-A local demo that shows, for a chosen service and URL, who calls it and what it calls, including transitive calls. Sixteen Spring Boot 4.1 / Kotlin services (Java 27) send traces, logs and metrics via OTLP to a Grafana LGTM stack (`grafana/otel-lgtm`), and the dashboards draw the service map from those signals.
+A local demo that shows, for a chosen service and URL, who calls it and what it calls, including transitive calls. Sixteen Spring Boot 4.1 / Kotlin services (Java 25 LTS) send traces, logs and metrics via OTLP to a Grafana LGTM stack (`grafana/otel-lgtm`), and the dashboards draw the service map from those signals.
 
 - `service-a` to `service-d`: the small diamond demo
 - twelve bank-like services (`api-gateway`, `ledger-service`, ...): see [Bank-like service mesh](#bank-like-service-mesh)
@@ -15,13 +15,16 @@ service-a --/status-> service-d --/hello--> service-c
 
 ## Run it and see the UI
 
-Requirements: Docker with Compose, about 10 GB free RAM for the Docker VM (sixteen JVMs plus Grafana) and internet access for the first build (Maven dependencies and base images). Nothing else needs installing; the services are built inside Docker.
+Requirements: Docker with Compose, about 6 GB free RAM for the Docker VM (sixteen JVMs plus Grafana), internet access for the first build, and a JDK 25 plus Gradle only if you do not use the Nix shell below. The images are built with Spring Boot's `bootBuildImage` (Cloud Native Buildpacks, no Dockerfile), so Docker must be reachable from Gradle (set `DOCKER_HOST` if your Docker socket is not `/var/run/docker.sock`, e.g. Rancher Desktop).
 
 ```bash
-docker compose up --build -d
+nix develop -c ./gradlew bootBuildImage   # builds servicemap/service-a..d and servicemap/mesh-service
+docker compose up -d
 ```
 
-1. Wait about 2 minutes: the first build takes a while, the services start, and the load generator waits 20-25 s before sending traffic. Check with `docker compose ps` (everything should be `Up`).
+Without Nix, install a JDK 25 and run `./gradlew bootBuildImage` directly (the Gradle wrapper downloads Gradle itself). `nix develop` gives you JDK 25 and Gradle from `flake.nix`.
+
+1. Wait about 2 minutes: the services start and the load generator waits 20-25 s before sending traffic. Check with `docker compose ps` (everything should be `Up`).
 2. Open Grafana at http://localhost:3000. Anonymous access is enabled with the admin role, so there is no login.
 3. Open one of the dashboards (Dashboards menu, or the direct links):
    - [Service map (HTML)](http://localhost:3000/d/servicemap-html/service-map-html): the main UI, drawn as SVG with labels on every edge.
@@ -112,8 +115,7 @@ Change the topology by editing `mesh/*.yaml` and `docker compose up -d`.
 ## Tests
 
 ```bash
-docker build --target build --build-arg SERVICE=service-a -t servicemap-build .
-docker run --rm servicemap-build mvn -B test
+nix develop -c ./gradlew test
 ```
 
-Kotlin 2.4 cannot target JVM 27 yet, so bytecode targets 25 and runs on the Java 27 runtime image.
+The Gradle build (`build.gradle.kts`, one module per service plus `common`) compiles Kotlin to JVM 25 bytecode and runs the images on a Java 25 JRE chosen by the buildpack (`BP_JVM_VERSION` in each `build.gradle.kts`). After changing code, rebuild with `./gradlew bootBuildImage` and run `docker compose up -d` again.

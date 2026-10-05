@@ -1,13 +1,9 @@
 
 x-mesh-service: &mesh-service
-  build:
-    context: .
-    args:
-      SERVICE: mesh-service
-  image: servicemap-mesh-service
+  image: servicemap/mesh-service
+  mem_limit: 640m
   environment: &mesh-environment
     OTLP_ENDPOINT: http://lgtm:4318
-    JAVA_TOOL_OPTIONS: -Xmx256m -XX:+UseSerialGC
   depends_on:
     - lgtm
 
@@ -27,10 +23,7 @@ services:
       - ./grafana/plugins/marcusolsson-dynamictext-panel:/data/grafana/plugins/marcusolsson-dynamictext-panel:ro
 
   service-c:
-    build:
-      context: .
-      args:
-        SERVICE: service-c
+    image: servicemap/service-c
     environment:
       OTLP_ENDPOINT: http://lgtm:4318
     ports:
@@ -39,10 +32,7 @@ services:
       - lgtm
 
   service-b:
-    build:
-      context: .
-      args:
-        SERVICE: service-b
+    image: servicemap/service-b
     environment:
       OTLP_ENDPOINT: http://lgtm:4318
       SERVICE_C_URL: http://service-c:8080
@@ -52,10 +42,7 @@ services:
       - service-c
 
   service-d:
-    build:
-      context: .
-      args:
-        SERVICE: service-d
+    image: servicemap/service-d
     environment:
       OTLP_ENDPOINT: http://lgtm:4318
       SERVICE_C_URL: http://service-c:8080
@@ -65,10 +52,7 @@ services:
       - service-c
 
   service-a:
-    build:
-      context: .
-      args:
-        SERVICE: service-a
+    image: servicemap/service-a
     environment:
       OTLP_ENDPOINT: http://lgtm:4318
       SERVICE_B_URL: http://service-b:8080
