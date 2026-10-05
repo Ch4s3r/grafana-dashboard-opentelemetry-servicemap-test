@@ -293,6 +293,7 @@
   opacity: 1;
   filter: drop-shadow(0 0 6px var(--accent));
 }
+.service-map .edge-group.chosen .edge,
 .service-map .edge-group.hovered .edge,
 .service-map .edge-group.chain .edge {
   opacity: 1;
@@ -303,6 +304,7 @@
   to { stroke-dashoffset: -18; }
 }
 @media (prefers-reduced-motion: reduce) {
+  .service-map .edge-group.chosen .edge,
   .service-map .edge-group.hovered .edge,
   .service-map .edge-group.chain .edge {
     animation: none;

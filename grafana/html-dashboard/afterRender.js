@@ -1,4 +1,5 @@
 const root = context.element;
+const initialSelection = new URLSearchParams(window.location.search).get("select");
 const container = root.querySelector(".service-map");
 if (!container || container.dataset.bound === "true") return;
 container.dataset.bound = "true";
@@ -219,6 +220,13 @@ if (!window.serviceMapEscapeBound) {
       if (bar) bar.click();
     }
   });
+}
+
+if (initialSelection && !state.selection && !state.initialSelectionApplied) {
+  state.initialSelectionApplied = true;
+  const [type, value] = [initialSelection.slice(0, initialSelection.indexOf(":")), initialSelection.slice(initialSelection.indexOf(":") + 1)];
+  if (type === "edge") state.selection = { type, key: value };
+  if (type === "service") state.selection = { type, name: value };
 }
 
 applyHopFilter();
