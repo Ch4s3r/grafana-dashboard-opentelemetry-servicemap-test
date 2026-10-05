@@ -1,0 +1,10 @@
+mesh:
+  routes:
+    - path: /clearing/submit
+      calls:
+        - service: fraud-detection-service
+          path: /fraud/score
+          times: 1
+        - service: notification-service
+          path: /notifications/payment-confirmation
+          times: 1

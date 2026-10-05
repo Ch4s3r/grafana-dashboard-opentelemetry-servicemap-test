@@ -1,0 +1,5 @@
+mesh:
+  routes:
+    - path: /ledger/holds
+    - path: /ledger/postings
+    - path: /ledger/balances

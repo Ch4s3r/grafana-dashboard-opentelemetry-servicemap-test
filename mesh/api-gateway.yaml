@@ -1,0 +1,14 @@
+mesh:
+  entrypoints:
+    - service: mobile-banking-bff
+      path: /api/transfers
+      every-millis: 3000
+      times: 3
+    - service: mobile-banking-bff
+      path: /api/dashboard
+      every-millis: 2000
+      times: 4
+    - service: identity-service
+      path: /oauth/token
+      every-millis: 5000
+      times: 1

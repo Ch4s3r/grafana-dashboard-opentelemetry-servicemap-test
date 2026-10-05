@@ -1,0 +1,4 @@
+mesh:
+  routes:
+    - path: /identity/verify
+    - path: /oauth/token

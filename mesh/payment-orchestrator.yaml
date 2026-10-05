@@ -1,0 +1,13 @@
+mesh:
+  routes:
+    - path: /payments
+      calls:
+        - service: ledger-service
+          path: /ledger/holds
+          times: 2
+        - service: clearing-service
+          path: /clearing/submit
+          times: 1
+        - service: settlement-service
+          path: /settlements/schedule
+          times: 1

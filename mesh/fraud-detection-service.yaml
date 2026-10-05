@@ -1,0 +1,3 @@
+mesh:
+  routes:
+    - path: /fraud/score

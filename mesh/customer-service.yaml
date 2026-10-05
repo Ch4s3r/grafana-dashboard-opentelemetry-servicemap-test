@@ -1,0 +1,7 @@
+mesh:
+  routes:
+    - path: /customers/profile
+      calls:
+        - service: identity-service
+          path: /identity/verify
+          times: 1

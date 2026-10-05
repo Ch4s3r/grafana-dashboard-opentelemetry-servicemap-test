@@ -1,0 +1,7 @@
+mesh:
+  routes:
+    - path: /transactions/search
+      calls:
+        - service: account-service
+          path: /accounts/lookup
+          times: 1

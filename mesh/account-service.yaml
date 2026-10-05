@@ -1,0 +1,12 @@
+mesh:
+  routes:
+    - path: /accounts/summary
+      calls:
+        - service: ledger-service
+          path: /ledger/balances
+          times: 1
+    - path: /accounts/lookup
+      calls:
+        - service: ledger-service
+          path: /ledger/balances
+          times: 1

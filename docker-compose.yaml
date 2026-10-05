@@ -1,0 +1,177 @@
+
+x-mesh-service: &mesh-service
+  build:
+    context: .
+    args:
+      SERVICE: mesh-service
+  image: servicemap-mesh-service
+  environment: &mesh-environment
+    OTLP_ENDPOINT: http://lgtm:4318
+    JAVA_TOOL_OPTIONS: -Xmx256m -XX:+UseSerialGC
+  depends_on:
+    - lgtm
+
+services:
+  lgtm:
+    image: grafana/otel-lgtm:latest
+    environment:
+      GF_PANELS_DISABLE_SANITIZE_HTML: "true"
+    ports:
+      - "3000:3000"
+      - "4317:4317"
+      - "4318:4318"
+    volumes:
+      - ./lgtm/tempo-config.yaml:/otel-lgtm/tempo-config.yaml
+      - ./grafana/provisioning/servicemap-dashboards.yaml:/otel-lgtm/grafana/conf/provisioning/dashboards/servicemap-dashboards.yaml
+      - ./grafana/dashboards:/otel-lgtm/servicemap-dashboards
+      - ./grafana/plugins/marcusolsson-dynamictext-panel:/data/grafana/plugins/marcusolsson-dynamictext-panel:ro
+
+  service-c:
+    build:
+      context: .
+      args:
+        SERVICE: service-c
+    environment:
+      OTLP_ENDPOINT: http://lgtm:4318
+    ports:
+      - "8083:8080"
+    depends_on:
+      - lgtm
+
+  service-b:
+    build:
+      context: .
+      args:
+        SERVICE: service-b
+    environment:
+      OTLP_ENDPOINT: http://lgtm:4318
+      SERVICE_C_URL: http://service-c:8080
+    ports:
+      - "8082:8080"
+    depends_on:
+      - service-c
+
+  service-d:
+    build:
+      context: .
+      args:
+        SERVICE: service-d
+    environment:
+      OTLP_ENDPOINT: http://lgtm:4318
+      SERVICE_C_URL: http://service-c:8080
+    ports:
+      - "8084:8080"
+    depends_on:
+      - service-c
+
+  service-a:
+    build:
+      context: .
+      args:
+        SERVICE: service-a
+    environment:
+      OTLP_ENDPOINT: http://lgtm:4318
+      SERVICE_B_URL: http://service-b:8080
+      SERVICE_D_URL: http://service-d:8080
+    ports:
+      - "8081:8080"
+    depends_on:
+      - service-b
+      - service-d
+
+  api-gateway:
+    <<: *mesh-service
+    environment:
+      <<: *mesh-environment
+      SPRING_APPLICATION_NAME: api-gateway
+      SPRING_CONFIG_ADDITIONAL_LOCATION: file:/config/
+    volumes:
+      - ./mesh/api-gateway.yaml:/config/application.yaml:ro
+  mobile-banking-bff:
+    <<: *mesh-service
+    environment:
+      <<: *mesh-environment
+      SPRING_APPLICATION_NAME: mobile-banking-bff
+      SPRING_CONFIG_ADDITIONAL_LOCATION: file:/config/
+    volumes:
+      - ./mesh/mobile-banking-bff.yaml:/config/application.yaml:ro
+  payment-orchestrator:
+    <<: *mesh-service
+    environment:
+      <<: *mesh-environment
+      SPRING_APPLICATION_NAME: payment-orchestrator
+      SPRING_CONFIG_ADDITIONAL_LOCATION: file:/config/
+    volumes:
+      - ./mesh/payment-orchestrator.yaml:/config/application.yaml:ro
+  clearing-service:
+    <<: *mesh-service
+    environment:
+      <<: *mesh-environment
+      SPRING_APPLICATION_NAME: clearing-service
+      SPRING_CONFIG_ADDITIONAL_LOCATION: file:/config/
+    volumes:
+      - ./mesh/clearing-service.yaml:/config/application.yaml:ro
+  settlement-service:
+    <<: *mesh-service
+    environment:
+      <<: *mesh-environment
+      SPRING_APPLICATION_NAME: settlement-service
+      SPRING_CONFIG_ADDITIONAL_LOCATION: file:/config/
+    volumes:
+      - ./mesh/settlement-service.yaml:/config/application.yaml:ro
+  account-service:
+    <<: *mesh-service
+    environment:
+      <<: *mesh-environment
+      SPRING_APPLICATION_NAME: account-service
+      SPRING_CONFIG_ADDITIONAL_LOCATION: file:/config/
+    volumes:
+      - ./mesh/account-service.yaml:/config/application.yaml:ro
+  transaction-service:
+    <<: *mesh-service
+    environment:
+      <<: *mesh-environment
+      SPRING_APPLICATION_NAME: transaction-service
+      SPRING_CONFIG_ADDITIONAL_LOCATION: file:/config/
+    volumes:
+      - ./mesh/transaction-service.yaml:/config/application.yaml:ro
+  customer-service:
+    <<: *mesh-service
+    environment:
+      <<: *mesh-environment
+      SPRING_APPLICATION_NAME: customer-service
+      SPRING_CONFIG_ADDITIONAL_LOCATION: file:/config/
+    volumes:
+      - ./mesh/customer-service.yaml:/config/application.yaml:ro
+  identity-service:
+    <<: *mesh-service
+    environment:
+      <<: *mesh-environment
+      SPRING_APPLICATION_NAME: identity-service
+      SPRING_CONFIG_ADDITIONAL_LOCATION: file:/config/
+    volumes:
+      - ./mesh/identity-service.yaml:/config/application.yaml:ro
+  ledger-service:
+    <<: *mesh-service
+    environment:
+      <<: *mesh-environment
+      SPRING_APPLICATION_NAME: ledger-service
+      SPRING_CONFIG_ADDITIONAL_LOCATION: file:/config/
+    volumes:
+      - ./mesh/ledger-service.yaml:/config/application.yaml:ro
+  fraud-detection-service:
+    <<: *mesh-service
+    environment:
+      <<: *mesh-environment
+      SPRING_APPLICATION_NAME: fraud-detection-service
+      SPRING_CONFIG_ADDITIONAL_LOCATION: file:/config/
+    volumes:
+      - ./mesh/fraud-detection-service.yaml:/config/application.yaml:ro
+  notification-service:
+    <<: *mesh-service
+    environment:
+      <<: *mesh-environment
+      SPRING_APPLICATION_NAME: notification-service
+      SPRING_CONFIG_ADDITIONAL_LOCATION: file:/config/
+    volumes:
+      - ./mesh/notification-service.yaml:/config/application.yaml:ro

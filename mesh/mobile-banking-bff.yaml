@@ -1,0 +1,18 @@
+mesh:
+  routes:
+    - path: /api/transfers
+      calls:
+        - service: payment-orchestrator
+          path: /payments
+          times: 1
+        - service: customer-service
+          path: /customers/profile
+          times: 1
+    - path: /api/dashboard
+      calls:
+        - service: account-service
+          path: /accounts/summary
+          times: 1
+        - service: transaction-service
+          path: /transactions/search
+          times: 1

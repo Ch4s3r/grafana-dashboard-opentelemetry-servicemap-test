@@ -1,0 +1,10 @@
+mesh:
+  routes:
+    - path: /settlements/schedule
+      calls:
+        - service: ledger-service
+          path: /ledger/postings
+          times: 1
+        - service: notification-service
+          path: /notifications/settlement-advice
+          times: 1
