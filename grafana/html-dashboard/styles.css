@@ -179,7 +179,7 @@
   font-weight: 700;
 }
 .service-map .dim {
-  opacity: 0.14;
+  opacity: 0.32;
 }
 .service-map .stat .sub {
   color: var(--text-secondary);
